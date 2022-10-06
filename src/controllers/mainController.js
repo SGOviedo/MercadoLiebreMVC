@@ -1,19 +1,65 @@
-const {loadProducts} =require('../data/dbModule')
+const db = require('../database/models');
+
+const {loadProducts} =require('../data/dbModule');
+const { Op } = require('sequelize');
 
 const toThousand = n => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
 const controller = {
 	index: (req, res) => {
 		// Do the magic
-		let products = loadProducts();
-		let productsVisited = products.filter(product => product.category === "visited");
-		let productsInSale = products.filter(product => product.category === "in-sale");
+		let productsInsale = db.Product.findAll({
+			where : {
+				discount : {
+					[Op.gte] : 12
+				}
+			},
+			limit : 4,
+			order : [
+				['discount','DESC']
+			],
+			attributes : {
+				exclude : ['createdAt','updatedAt','categoryId']
+			},
+			include : [
+				{
+					association : 'category',
+					attributes : ['id','name']
+				},
+				{
+					association : 'images'
+				}
+			]
+		});	
+		let productsVisited = db.Product.findAll({
+			order : [
+				['createdAt','DESC']
+			],
+			limit : 4,
+			attributes : {
+				exclude : ['updatedAt','categoryId']
+			},
+			include : [
+				{
+					association : 'category',
+					attributes : ['id','name']
+				},
+				{
+					association : 'images'
+				}
+			]
+		});
 
-		return res.render('index', {
-			productsVisited,
-			productsInSale,
-			toThousand
-		})
+		Promise.all([productsInsale, productsVisited])
+			.then(([productsInSale, productsVisited]) => {
+				return res.render('index', {
+					productsVisited,
+					productsInSale,
+					toThousand
+				})
+			})
+			.catch(error => console.log(error))
+
 	},
 	search: (req, res) => {
 		// Do the magic
