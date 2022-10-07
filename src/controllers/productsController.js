@@ -47,41 +47,50 @@ const controller = {
 	// Detail - Detail from one product
 	detail: (req, res) => {
 		// Do the magic
-		let products = loadProducts();
-		let product = products.find(product => product.id === +req.params.id);
-		return res.render('detail', {
+		db.Product.findByPk(req.params.id,{
+			include : [{all : true}]
+		})
+			.then(product => {
+				return res.render('detail', {
 			product,
 			toThousand
-		})
+			})
+			})
+			.catch(error => console.log(error))
+		
 	},
 
 	// Create - Form to create
 	create: (req, res) => {
 		// Do the magic
-		return res.render('product-create-form')
+		db.Category.findAll({
+			order : ['name']
+		})
+			.then(categories => {
+				return res.render('product-create-form', {
+					categories
+				})
+			})
+			.catch(error => console.log(error))
 	},
 	
 	// Create -  Method to store
 	store: (req, res) => {
 		// Do the magic
 		const {name, price,discount, description, category} = req.body;
-		let products = loadProducts();
 
-		const newProduct = {
-			id : products[products.length - 1].id + 1,
+		db.Product.create({
 			name : name.trim(),
-			price : +price,
-			description : description.trim(),
-			discount : +discount,
-			category,
-			image : 'default-image.png'
-		}
-
-		let productsModify = [...products, newProduct];
-
-		storeProducts(productsModify);
-
-		return res.redirect('/products')
+			price,
+			discount,
+			description,
+			categoryId : category
+		})
+			.then(product => {
+				return res.redirect('/products/detail/' + product.id)
+			})
+			.catch(error => console.log(error))
+		
 	},
 
 	// Update - Form to edit
