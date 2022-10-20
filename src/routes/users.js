@@ -7,7 +7,7 @@ const {register, processRegister, login, processLogin, profile, update, logout, 
 const loginValidator = require('../validations/loginValidator');
 const registerValidator = require('../validations/registerValidator');
 
-const {userCheck} = require('../middlewares')
+const {userCheck, uploadFile} = require('../middlewares')
 
 /* /users */
 router
@@ -16,7 +16,7 @@ router
     .get('/login', login)
     .post('/login', loginValidator, processLogin)
     .get('/profile', userCheck, profile)
-    .put('/update/:id', update)
+    .put('/update', uploadFile.single('avatar'), update)
     .get('/logout', logout)
     .delete('/remove/:id', remove)
 

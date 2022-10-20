@@ -1,7 +1,7 @@
 const {validationResult} = require('express-validator');
 const {loadUsers, storeUsers} = require('../data/dbModule');
 const {hashSync} =require('bcryptjs');
-
+const db = require('../database/models');
 
 module.exports = {
     register : (req,res) => {
@@ -9,22 +9,23 @@ module.exports = {
     },
     processRegister : (req,res) => {
         let errors = validationResult(req);
+        const {name, surname, email, pass} = req.body
         if(errors.isEmpty()){
 
-            let newUser = {
-                id :  loadUsers().length !== 0 ? loadUsers()[loadUsers().length - 1] + 1 : 1,
-                ...req.body,
-                pass : hashSync(req.body.pass, 10),
-                pass2 : null,
-                avatar : null
-            }
-
-            let usersModify = [...loadUsers(), newUser];
-
-            storeUsers(usersModify)
-
-            return res.redirect('/users/login')
-
+            db.User.create({
+                name : name.trim(),
+                surname : surname.trim(),
+                email : email.trim(),
+                password : hashSync(pass, 10),
+                rolId : 2
+            }).then(user => {
+                db.Address.create({
+                    userId: user.id
+                }).then( () => {
+                    return res.redirect('/users/login')
+                })
+            }).catch(error => console.log(error))
+            
         }else {
             return res.render('userRegister',{
                 errors : errors.mapped(),
@@ -39,18 +40,22 @@ module.exports = {
         let errors = validationResult(req);
         if(errors.isEmpty()){
 
-            let {id, name, avatar} = loadUsers().find(user => user.email === req.body.email);
+            db.User.findOne({
+                where : {
+                    email : req.body.email
+                }
+            }).then(({id, name, avatar, rolId}) => {
+                req.session.userLogin = {
+                    id,
+                    name,
+                    avatar,
+                    rol : rolId
+                };
+                req.body.remember && res.cookie('mercadoLiebre15',req.session.userLogin, {maxAge : 1000 * 60});
+                
+                return res.redirect('/');
 
-            req.session.userLogin = {
-                id,
-                name,
-                avatar
-            };
-
-            req.body.remember && res.cookie('mercadoLiebre15',req.session.userLogin, {maxAge : 1000 * 60})
-
-
-            return res.redirect('/');
+            }).catch(error => console.log(error))
 
         }else {
             return res.render('userLogin',{
@@ -61,14 +66,41 @@ module.exports = {
     },
     profile : (req,res) => {
         
-        let user = loadUsers().find(user => user.id === req.session.userLogin.id);
+        db.User.findByPk(req.session.userLogin.id)
+            .then(user => {
+                return res.render('userProfile',{
+                    user
+                })
+            })
+            .catch(error => console.log(error))
 
-        return res.render('userProfile',{
-            user
-        })
+   
     },
     update : (req,res) => {
-        return res.send(req.body)
+
+        const {name, surname, password} = req.body;
+
+        db.User.findByPk(req.session.userLogin.id)
+            .then(user => {
+                db.User.update(
+                    {
+                        name,
+                        surname,
+                        password : password ? hashSync(password,10) : user.password,
+                        avatar : req.file ? req.file.filename : user.avatar
+                    },
+                    {
+                        where : {
+                            id : req.session.userLogin.id
+                        }
+                    }
+                ).then( () => {
+                    return res.redirect('/users/profile')
+                })
+        
+            }).catch(error => console.log(error))
+
+      
     },
     logout : (req,res) => {
         req.session.destroy();
