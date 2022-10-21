@@ -22,7 +22,7 @@
                         width="75%" style="object-fit: cover; object-position: top;">
                       <div class="form-group">
                         <label for="avatar" class="buy-now-button m-1">Cambiar imagen</label>
-                        <input hidden type="file" class="form-input" id="avatar" name="avatar" >
+                        <input type="file" class="form-input" id="avatar" name="avatar" hidden>
                       </div>
                     </div>
                     <div class="col-12 col-md-8 ">
@@ -45,11 +45,18 @@
                           <label class="form-label" for="password2">Confirmar contraseña</label>
                           <input type="password" name="password2" class="form-input" id="password2" autocomplete="off">
                         </div>
+                        <div class="form-group col-12 col-md-6">
+                          <h4>Intereses</h4>
+                          <% interests.forEach(({id,name}) => { %>
+                            <input type="checkbox" value="<%= id %>" name="intereses" id="<%= name %>"><label for="<%= name %>"><%= name %></label>
+                          <% }) %>
+                        </div>
                       </div>
+
                       <div class="d-md-flex justify-content-end mt-5">
-                        <button type="button" class="cancel-button m-1"><a href="/" class="text-light">Salir sin
+                        <button type="button" class="cancel-button m-2"><a href="/" class="text-light">Salir sin
                             guardar</a></button>
-                        <button type="submit" class="buy-now-button m-1">Actualizar datos</button>
+                        <button type="submit" class="buy-now-button m-2">Actualizar datos</button>
                       </div>
                     </div>
                   </div>

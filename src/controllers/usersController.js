@@ -66,10 +66,14 @@ module.exports = {
     },
     profile : (req,res) => {
         
-        db.User.findByPk(req.session.userLogin.id)
-            .then(user => {
+        let user = db.User.findByPk(req.session.userLogin.id)
+        let interests = db.Interest.findAll()
+
+        Promise.all([user,interests])
+            .then(([user,interests]) => {
                 return res.render('userProfile',{
-                    user
+                    user,
+                    interests
                 })
             })
             .catch(error => console.log(error))
@@ -78,7 +82,7 @@ module.exports = {
     },
     update : (req,res) => {
 
-        const {name, surname, password} = req.body;
+        let {name, surname, password, intereses} = req.body;
 
         db.User.findByPk(req.session.userLogin.id)
             .then(user => {
@@ -87,7 +91,7 @@ module.exports = {
                         name,
                         surname,
                         password : password ? hashSync(password,10) : user.password,
-                        avatar : req.file ? req.file.filename : user.avatar
+                        avatar : req.file ? req.file.filename : user.avatar,
                     },
                     {
                         where : {
@@ -95,6 +99,23 @@ module.exports = {
                         }
                     }
                 ).then( () => {
+                        db.InterestUser.destroy({
+                            where : {
+                                userId : user.id
+                            }
+                        }).then( () => {
+                            if(intereses){
+
+                            intereses = typeof intereses === "string" ? [intereses] : intereses;
+
+                            intereses.forEach( async (interes) => {
+                                await db.InterestUser.create({
+                                    userId : user.id,
+                                    interestId : interes
+                                })
+                            });
+                        }
+                        })
                     return res.redirect('/users/profile')
                 })
         
