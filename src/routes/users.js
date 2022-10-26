@@ -7,13 +7,8 @@ const {profile, update, remove} = require('../controllers/usersController');
 
 /* /users */
 router
-    .get('/register', register)
-    .post('/register', registerValidator, processRegister)
-    .get('/login', login)
-    .post('/login', loginValidator, processLogin)
-    .get('/profile', userCheck, profile)
+    .get('/profile', profile)
     .put('/update/:id', update)
-    .get('/logout', logout)
     .delete('/remove/:id', remove)
 
 module.exports = router;
