@@ -3,58 +3,6 @@
 <!-- Include Head -->
 <%- include('partials/head', {title: 'Inicio'}) %>
 <body>
-	<!-- Header -->
-	<%- include('partials/headerNavbar') %>
-	<!-- /Header -->
-	
-	<!-- Banner -->
-	<div class="banner"></div>
-	<!-- /Banner -->
-
-	<!-- ultima visita -->
-	<div class="container products-wrapper">
-		<div class="row">
-			<div class="col-12">
-				<h2 class="products-title">Últimos agregados</h2>
-			</div>
-			<!-- Show the "visited" products -->
-			<% productsVisited.forEach(({id,name,price,images,discount}) => { %>
-					<%- include('./partials/product',{
-						id,
-						name,
-						price,
-						images,
-						discount,
-						toThousand
-					})  %> 
-				<% }) %>
-		</div>
-	</div>
-	<!-- /ultima visita -->
-
-	<!-- Ofertas -->
-	<div class="container products-wrapper">
-		<div class="row">
-			<div class="col-12">
-				<h2 class="products-title">Ofertas</h2>
-			</div>
-			<!-- Show the "in-sale" products -->
-			<% productsInSale.forEach(({id,name,price,images,discount}) => { %>
-					<%- include('./partials/product',{
-						id,
-						name,
-						price,
-						images,
-						discount,
-						toThousand
-					})  %> 
-				<% }) %>
-		</div>
-	</div>
-	<!-- /Ofertas -->
-
-	<!-- footer -->
-	<%- include('partials/footer') %>
-	<!-- /footer -->
+	<p>Futuro Api Explorer</p>
 </body>	
 </html>

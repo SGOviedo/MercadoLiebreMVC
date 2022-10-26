@@ -3,12 +3,11 @@ const express = require('express');
 const router = express.Router();
 
 // ************ Controller Require ************
-const {profile, update, remove} = require('../controllers/usersController');
+const {processRegister, processLogin} = require('../controllers/authController');
 
 /* /users */
 router
-    .get('/profile', profile)
-    .put('/update', update)
-    .delete('/remove', remove)
+    .post('/register', processRegister)
+    .post('/login', processLogin)
 
 module.exports = router;
